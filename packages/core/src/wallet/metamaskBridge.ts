@@ -176,12 +176,16 @@ function createMetaMaskProviderWrapper(
   return metaMaskProviderWrapper as StarknetWindowObject
 }
 
+//TODO: yeni window objesi oluşturulduğunda injectMetamaskBridge fonksiyonu çağrılacak fakat starknet_metamask ve wallet.id bizimki olacak
+
 async function injectMetamaskBridge(windowObject: Record<string, unknown>) {
   if (windowObject.hasOwnProperty("starknet_metamask")) {
     return
   }
 
-  const metamaskWalletInfo = wallets.find((wallet) => wallet.id === "metamask")
+  const metamaskWalletInfo = wallets.find(
+    (wallet) => wallet.id === "metamaskRosetta",
+  )
   if (!metamaskWalletInfo) {
     return
   }
