@@ -9,7 +9,7 @@ import { init, loadRemote } from "@module-federation/runtime"
 
 interface MetaMaskProvider {
   isMetaMask: boolean
-  request(options: { method: string }): Promise<void>
+  request(options: { method: string }): Promise<string[]>
 }
 
 function isMetaMaskProvider(obj: unknown): obj is MetaMaskProvider {
@@ -143,12 +143,14 @@ function createMetaMaskProviderWrapper(
       return metaMaskSnapWallet.request(call)
     },
     async enable(): Promise<string[]> {
-      if (!metaMaskSnapWallet) {
-        fetchPromise = fetchPromise || fetchMetaMaskSnapWallet(provider)
-        metaMaskSnapWallet = await fetchPromise
-      }
+      // if (!metaMaskSnapWallet) {
+      //   fetchPromise = fetchPromise || fetchMetaMaskSnapWallet(provider)
+      //   metaMaskSnapWallet = await fetchPromise
+      // }
 
-      const accounts = await metaMaskSnapWallet!.enable()
+      const accounts = await (provider as MetaMaskProvider).request({
+        method: "eth_requestAccounts",
+      })
       return accounts
     },
     isPreauthorized() {
@@ -194,6 +196,8 @@ async function injectMetamaskBridge(windowObject: Record<string, unknown>) {
   if (!provider) {
     return
   }
+
+  //TODO: burada snapli mi snapsiz mi bağlantı if koyup hangisine göre bu fonksiyonda createMetaMaskProviderWrapper(), enable() çağırıcağımızı belirleyeceğiz.
 
   windowObject.starknet_metamask = createMetaMaskProviderWrapper(
     metamaskWalletInfo,
