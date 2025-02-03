@@ -97,14 +97,70 @@ async function fetchMetaMaskSnapWallet(provider: unknown) {
 
   const result = await loadRemote("MetaMaskStarknetSnapWallet/index")
 
+  console.log("result", result)
+
   const { MetaMaskSnapWallet } = result as {
     MetaMaskSnapWallet: any
     MetaMaskSnap: any
   }
 
+  console.log("MetaMaskSnapWallet-1", MetaMaskSnapWallet)
+
   const metaMaskSnapWallet = new MetaMaskSnapWallet(provider, "*")
+
+  console.log("MetaMaskSnapWallet-2", MetaMaskSnapWallet)
   return metaMaskSnapWallet as IStarknetWindowObject
 }
+
+// TODO: Üstteki Metamask snap wallet gibi bir fonksiyon yazılacak ve ya result as {MetaMaskSnapWallet: any, MetaMaskSnap: any} gibi atama yapılması gerekiyor. result as {metamaskaccount, metamasksigner} olabilir
+
+// Bu metamaskAccount
+// MetaMaskAccount: class c
+// length: 5
+// name: "c"
+// prototype: Qr
+// constructor: class c
+// declare: ƒ async declare(e,t)
+// execute: ƒ async execute(e,t,a)
+// signMessage: ƒ async signMessage(e)
+// [[Prototype]]: mr
+// arguments: (...)
+// caller: (...)
+// [[FunctionLocation]]: 783.0999edcce2c3ff97…56a19c615b1f24202:1
+// [[Prototype]]: class extends
+// [[Scopes]]: Scopes[2]
+
+// Bu metamask snap wallet
+// pollingDelayMs: 100
+// pollingTimeoutMs: 5000
+// snapId: "npm:@consensys/starknet-snap"
+// snapVersion: "3.1.0"
+// length: 1
+// name: "k"
+// prototype:
+// account: [Exception: TypeError: Cannot read private member from an object whose class did not declare it at https://snaps.consensys.io/starknet/get-starknet/v1/783.0999edcce2c3ff9734fb.js?v=a1356a19c615b1f24202:1:22837 at get account (https://snaps.consensys.io/starknet/get-starknet/v1/783.0999edcce2c3ff9734fb.js?v=a1356a19c615b1f24202:1:25300) at Object.invokeGetter (<anonymous>:3:28)]
+// chainId: [Exception: TypeError: Cannot read private member from an object whose class did not declare it at https://snaps.consensys.io/starknet/get-starknet/v1/783.0999edcce2c3ff9734fb.js?v=a1356a19c615b1f24202:1:22837 at get chainId (https://snaps.consensys.io/starknet/get-starknet/v1/783.0999edcce2c3ff9734fb.js?v=a1356a19c615b1f24202:1:25781) at Object.invokeGetter (<anonymous>:3:28)]
+// constructor: class k
+// enable: ƒ async enable()
+// init: async init(e=!0){e?await this.lock.runExclusive((async()=> {…}
+// isPreauthorized: ƒ async isPreauthorized()
+// off: ƒ off(e,t)
+// on: ƒ on(e,t)
+// provider: (...)
+// request: ƒ async request(e)
+// selectedAddress: (...)
+// get account: ƒ account()
+// get chainId: ƒ chainId()
+// get provider: ƒ provider()
+// get selectedAddress: ƒ selectedAddress()
+// [[Prototype]]: Object
+// arguments: (...)
+// caller: (...)
+// [[FunctionLocation]]: 783.0999edcce2c3ff97…56a19c615b1f24202:1
+// [[Prototype]]: ƒ ()
+// [[Scopes]]: Scopes[3]
+// __esModule: true
+// Symbol(mf_module_id): "MetaMaskStarknetSnapWallet/index"
 
 function createMetaMaskProviderWrapper(
   walletInfo: WalletProvider,
@@ -143,14 +199,12 @@ function createMetaMaskProviderWrapper(
       return metaMaskSnapWallet.request(call)
     },
     async enable(): Promise<string[]> {
-      // if (!metaMaskSnapWallet) {
-      //   fetchPromise = fetchPromise || fetchMetaMaskSnapWallet(provider)
-      //   metaMaskSnapWallet = await fetchPromise
-      // }
+      if (!metaMaskSnapWallet) {
+        fetchPromise = fetchPromise || fetchMetaMaskSnapWallet(provider)
+        metaMaskSnapWallet = await fetchPromise
+      }
 
-      const accounts = await (provider as MetaMaskProvider).request({
-        method: "eth_requestAccounts",
-      })
+      const accounts = await metaMaskSnapWallet!.enable()
       return accounts
     },
     isPreauthorized() {
@@ -185,9 +239,8 @@ async function injectMetamaskBridge(windowObject: Record<string, unknown>) {
     return
   }
 
-  const metamaskWalletInfo = wallets.find(
-    (wallet) => wallet.id === "metamaskRosetta",
-  )
+  const metamaskWalletInfo = wallets.find((wallet) => wallet.id === "metamask")
+
   if (!metamaskWalletInfo) {
     return
   }
@@ -198,11 +251,37 @@ async function injectMetamaskBridge(windowObject: Record<string, unknown>) {
   }
 
   //TODO: burada snapli mi snapsiz mi bağlantı if koyup hangisine göre bu fonksiyonda createMetaMaskProviderWrapper(), enable() çağırıcağımızı belirleyeceğiz.
-
   windowObject.starknet_metamask = createMetaMaskProviderWrapper(
     metamaskWalletInfo,
     provider,
   )
 }
+
+// async function connectMetamaskBridge(
+//   windowObject: Record<string, unknown>,
+//   selectedWallet: string,
+// ) {
+//   const metamaskWalletInfo = wallets.find(
+//     (wallet) => wallet.id === selectedWallet,
+//   )
+
+//   console.log(selectedWallet)
+
+//   if (!metamaskWalletInfo) {
+//     return
+//   }
+
+//   const provider = await detectMetamaskSupport(windowObject)
+//   if (!provider) {
+//     return
+//   }
+
+//   //TODO: burada snapli mi snapsiz mi bağlantı if koyup hangisine göre bu fonksiyonda createMetaMaskProviderWrapper(), enable() çağırıcağımızı belirleyeceğiz.
+
+//   windowObject.starknet_metamask = createMetaMaskProviderWrapper(
+//     metamaskWalletInfo,
+//     provider,
+//   )
+// }
 
 export { injectMetamaskBridge }

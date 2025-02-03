@@ -7,7 +7,10 @@ import { IStorageWrapper, LocalStorageWrapper } from "./localStorageStore"
 import { pipe, ssrSafeWindow } from "./utils"
 import { FilterList, filterBy, filterByPreAuthorized } from "./wallet/filter"
 import { isWalletObj } from "./wallet/isWalletObject"
-import { injectMetamaskBridge } from "./wallet/metamaskBridge"
+import {
+  // connectMetamaskBridge,
+  injectMetamaskBridge,
+} from "./wallet/metamaskBridge"
 import { scanObjectForWallets } from "./wallet/scan"
 import { Sort, sortBy } from "./wallet/sort"
 
@@ -126,6 +129,9 @@ export function getStarknet(
       return firstPreAuthorizedWallet
     },
     enable: async (wallet, options) => {
+      // if (wallet.id === "metamask" || wallet.id === "metamaskRosetta") {
+      //   connectMetamaskBridge(windowObject, wallet.id)
+      // }
       await wallet.enable(options ?? { starknetVersion: "v5" })
       if (!wallet.isConnected) {
         throw new Error("Failed to connect to wallet")
