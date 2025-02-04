@@ -9,12 +9,14 @@ import { useState } from "react"
 
 function App() {
   const [walletName, setWalletName] = useState("")
+  const [address, setAddress] = useState("")
 
   function handleConnect(options?: ConnectOptions) {
     return async () => {
       const res = await connect(options)
       console.log(res)
       setWalletName(res?.name || "")
+      setAddress(res?.selectedAddress || "")
     }
   }
 
@@ -22,6 +24,7 @@ function App() {
     return async () => {
       await disconnect(options)
       setWalletName("")
+      setAddress("")
     }
   }
 
@@ -59,6 +62,9 @@ function App() {
         <div>
           <h2>
             Selected Wallet: <pre>{walletName}</pre>
+          </h2>
+          <h2>
+            Selected Address: <pre>{address}</pre>
           </h2>
         </div>
       )}
